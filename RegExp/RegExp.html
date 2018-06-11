@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>RegExp</title>
+</head>
+<body>
+</body>
+<script>
+	function codePointLength(text) {
+		var result = text.match(/[\s\S]/gu);
+		return result ? result.length : 0;
+	}
+
+	var s = '吉吉';
+
+	console.log(s.length);
+	console.log(codePointLength(s));
+
+	/*g修饰符*/
+	var str = "123#abc";
+	var noglobal = /abc/i;//非全局匹配模式
+	console.log(noglobal.test(str)); //输出ture
+	console.log(str);
+	console.log(noglobal.test(str)); //输出ture
+	console.log(str);
+	console.log(noglobal.test(str)); //输出ture
+	console.log(str);
+	console.log(noglobal.test(str)); //输出ture
+	console.log(str);
+
+	var re = /abc/ig;//全局匹配
+	console.log(re.test(str)); //输出ture
+	console.log(str);
+	console.log(re.test(str)); //输出false
+	console.log(str);
+	console.log(re.test(str)); //输出ture
+	console.log(str);
+	console.log(re.test(str)); //输出false
+	console.log(str);
+
+	var reg = /a/;
+	var str1 = "ababacc";
+	console.log(reg.exec(str1));
+	console.log(str1.match(reg));                                                    
+	console.log(reg.test(str1));
+
+	/*正则的扩展--解构赋值和替换*/
+	let re1 = /(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})/u;
+	var date = '2018-06-11'.replace(re1,'$<day>/$<month>/$<year>');
+	console.log(date);
+</script>
+</html>
