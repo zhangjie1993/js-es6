@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Array</title>
+</head>
+<body>
+</body>
+<script>
+	/*扩展运算符*/
+	function push(array, ...items) {
+		array.push(...items);
+	} 
+
+	function add(x, y) {
+		return x + y;
+	}
+	const numbers = [4,38];
+	var num = add(...numbers);
+	console.log(num);
+
+	function f(v, w, x, y, z) {
+		return(v + w + x + y + z);
+	}
+	const args = [0, 1];
+	var result = f(-1, ...args, 2, ...[3]);
+	console.log(result);
+
+	/*与解构赋值结合*/
+	function array() {
+		const [first, ...rest] = [1,2,3,4,5];
+		console.log(first);
+		console.log(rest);
+	}
+	array();
+
+	/*Array.from()*/
+	let arrayLike = {
+		"0": "a",
+		"1": "b",
+		"2": "c",
+		length: 3
+	}
+	//ES5的写法
+	var arr1 = [].slice.call(arrayLike);
+	//ES6的写法
+	var arr2 = Array.from(arrayLike);
+	console.log(arr1);
+	console.log(arr2);
+</script>
+</html>
