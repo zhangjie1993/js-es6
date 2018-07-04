@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Set和Map</title>
+</head>
+<body>
+</body>
+<script>
+	/*Set*/
+	const s = new Set();
+
+	[2,3,4,5,6,2,2].forEach(x => s.add(x));
+
+	for (let i of s) {
+		console.log(i);
+	}
+	
+	/*Set接受一个数组作为参数*/
+	const set = new Set([1,2,3,4,5,3]);
+	console.log(set);
+
+	/*Set数组去重*/
+	//方法一
+	let array = [1,2,1,2];
+	console.log([...new Set(array)]);
+
+	//方法二
+	function dedupe(array) {
+		return Array.from(new Set(array));
+	}
+	console.log(dedupe([1,2,3,1]));
+	/*Set的属性和方法*/
+	var s1 = new Set();
+
+	s1.add(1).add(2).add(2);
+	console.log(s1.size);
+	console.log(s1.has(1));
+	console.log(s1.has(2));
+	console.log(s1.has(3));
+
+	s1.delete(2);
+	console.log(s1.has(2));
+
+	/*eys()，values()，entries()*/
+	let set1 = new Set(['red','green','blue']);
+
+	for(let item of set1.keys()) {
+		console.log(item);
+	}
+
+	for(let item of set1.values()) {
+		console.log(item);
+	}
+
+	for(let item of set1.entries()) {
+		console.log(item);
+	}
+
+	/*forEach()*/
+	var set2 = new Set([1,4,9]);
+	set2.forEach((value, key) => console.log(key + ' : ' + value));
+
+	/*map和filter*/
+	let a = new Set([1, 2, 3]);
+	let b = new Set([4, 3, 2]);
+
+	//并集
+	let union = new Set([...a, ...b]);
+	console.log(union);
+
+	//交集
+	let intersect = new Set([...a].filter(x => b.has(x)));
+	console.log(intersect);
+
+	//差集
+	let difference = new Set([...a].filter(x => !b.has(x)));
+	console.log(difference);
+
+	/*WeakSet*/
+	//const ws = new WeakSet();
+	//ws.add(1);
+	//ws.add(Symbol())
+
+	/*Map*/
+	const m = new Map();
+	const o = {p: 'Hello World'};
+
+	m.set(o, 'content');
+	console.log(m.get(o));
+
+	console.log(m.has(o));
+	m.delete(o);
+	console.log(m.has(o));
+	/*Map构造函数接受数组作为参数*/
+	const items = [
+		['name','张三'],
+		['title','Author'],
+	];
+
+	const map1 = new Map();
+
+	items.forEach(
+		([key,value]) => map1.set(key,value)
+	);
+
+	/*size属性*/
+	const map2 = new Map();
+	map2.set('foo',true);
+	map2.set('bar',false);
+
+	console.log(map2.size);
+
+	/*set(key,value)*/
+	const map3 = new Map();
+
+	map3.set('sdititon', 6);
+	map3.set(262, 'standard');
+	map3.set(undefined, 'nah');
+	console.log(map3);
+
+	const map4 = new Map();
+	map4.set(1,'a').set(2,'b');
+	console.log(map4);
+
+	/*get*/
+	const map5 = new Map();
+	const hello = function() {
+		console.log('hello');
+	}
+	map5.set(hello,'ES6');
+	map5.get(hello);
+	console.log(map5);
+
+	/*has(key)*/
+	const map6 = new Map();
+	map6.set(1,'a').set(2,'b').set(3,'c');
+	console.log(map6.has(1));
+	console.log(map6.has(5));
+
+	/*delete(key)*/
+	map6.delete(1);
+	console.log(map6);
+	
+	/*clear*/
+	map6.clear();
+	console.log(map6.size);
+
+	/*遍历方法*/
+	const map7 = new Map([
+		['F','no'],
+		['T','yes'],
+	]);
+
+	for (let key of map7.keys()) {
+		console.log(key);
+	}
+
+	for (let value of map7.values()) {
+		console.log(value);
+	}
+
+	for (let item of map7.entries()) {
+		console.log(item[0], item[1]);
+	}
+
+	for(let [key,value] of map7.entries()) {
+		console.log(key, value);
+	}
+
+	for(let [key, value] of map7) {
+		console.log(key, value);
+	}
+
+	/*Map 结构转为数组结构*/
+	const map8 = new Map([
+		[1,'one'],
+		[2,'two'],
+		[3,'three'],
+	]);
+
+	console.log([...map8.keys()]);
+	console.log([...map8.values()]);
+	console.log([...map8.entries()]);
+	console.log([...map8]);
+
+	/*forEach*/
+	const reporter1 = {
+		report: function(key, value) {
+			console.log("key: %s,value: %s",key, value);
+		}
+	};
+
+	map8.forEach(function(value, key, map8) {
+		this.report(key, value);
+	}, reporter1)
+
+	/*Map转为数组*/
+	const map9 = new Map().set(true, 7).set({foo: 3}, ['abc']);
+	console.log([...map9]);
+
+	/*数组转为Map*/
+	const map10 = new Map([
+		[true, 7],
+		[{foo: 3}, ['abc']]
+	])
+	console.log(map10);
+
+	/*对象转为Map*/
+	function objToStrMap(obj) {
+		let strMap1 = new Map();
+		for (let k of Object.keys(obj)) {
+			strMap1.set(k, obj[k]);
+		}
+		console.log(strMap1);
+	}
+
+	objToStrMap({yes: true, no: false})
+
+	/*Map转为对象*/
+	function strMapToObj(strMap1) {
+		let obj = Object.create(null);
+		for (let [k,v] of strMap1) {
+			obj[k] = v;
+		}
+		console.log(obj);
+		return obj;
+	}
+
+	const map11 = new Map().set('yes', true).set('no', false);
+	strMapToObj(map11);
+	/*Map转为JSON*/
+	function strMapToJson(strMap1) {
+		console.log(strMapToObj(strMap1));
+		return JSON.stringify(strMapToObj(strMap1));
+	}
+	let myMap1 = new Map().set('yes', true).set('no',false);
+	var str = strMapToJson(myMap1);
+	console.log(str);
+
+	function mapToArrayJson(map) {
+	  console.log(JSON.stringify([...map]));
+	}
+
+	let myMap = new Map().set(true, 7).set({foo: 3}, ['abc']);
+	mapToArrayJson(myMap);
+
+	/*WeakMap的用途*/
+	const _counter = new WeakMap();
+	const _action = new WeakMap();
+
+	class Countdown {
+		constructor(counter, action) {
+			_counter.set(this, counter);
+			_action.set(this, action);
+		}
+
+		dec() {
+			let counter = _counter.get(this);
+			if (counter < 1) return;
+			counter--;
+			_counter.set(this, counter);
+			if (counter === 0) {
+				_action.get(this)();
+			}
+		}
+	}
+
+	const c = new Countdown(2, () => console.log('DONE'));
+	c.dec();
+	let result = c.dec();
+	console.log(result);
+
+	/**/
+</script>
+</html>
