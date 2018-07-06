@@ -1,0 +1,226 @@
+十二.Proxy
+(一)概述
+1.Proxy 用于修改某些操作的默认行为，等同于在语言层面做出修改，所以属于一种“元编程”（meta programming），即对编程语言进行编程。
+Proxy 可以理解成，在目标对象之前架设一层“拦截”，外界对该对象的访问，都必须先通过这层拦截，因此提供了一种机制，可以对外界的访问进行过滤和改写。Proxy 这个词的原意是代理，用在这里表示由它来“代理”某些操作，可以译为“代理器”。
+eg:	var obj = new Proxy({}, {
+	  get: function (target, key, receiver) {
+	    console.log(`getting ${key}!`);
+	    return Reflect.get(target, key, receiver);
+	  },
+	  set: function (target, key, value, receiver) {
+	    console.log(`setting ${key}!`);
+	    return Reflect.set(target, key, value, receiver);
+	  }
+	});
+
+	obj.count = 1
+	//  setting count!
+	++obj.count
+	//  getting count!
+	//  setting count!
+	//  2
+
+2.ES6 原生提供 Proxy 构造函数，用来生成 Proxy 实例。
+a.new Proxy()表示生成一个Proxy实例，target参数表示所要拦截的目标对象，handler参数也是一个对象，用来定制拦截行为。第一个参数是所要代理的目标对象（上例是一个空对象），即如果没有Proxy的介入，操作原来要访问的就是这个对象；第二个参数是一个配置对象，对于每一个被代理的操作，需要提供一个对应的处理函数，该函数将拦截对应的操作。
+eg:	var proxy = new Proxy({}, {
+	  get: function(target, property) {
+	    return 35;
+	  }
+	});
+
+	proxy.time // 35
+	proxy.name // 35
+	proxy.title // 35
+
+b.要使得Proxy起作用，必须针对Proxy实例（上例是proxy对象）进行操作，而不是针对目标对象（上例是空对象）进行操作。如果handler没有设置任何拦截，那就等同于直接通向原对象。
+eg:	var target = {};
+	var handler = {};
+	var proxy = new Proxy(target, handler);
+	proxy.a = 'b';
+	target.a // "b"
+handler是一个空对象，没有任何拦截效果，访问proxy就等同于访问target。
+c.将 Proxy 对象，设置到object.proxy属性，从而可以在object对象上调用。
+eg:	var object = { proxy: new Proxy(target, handler) };
+d.Proxy 实例也可以作为其他对象的原型对象。
+eg:	var proxy = new Proxy({}, {
+	  get: function(target, property) {
+	    return 35;
+	  }
+	});
+
+	let obj = Object.create(proxy);
+	obj.time // 35
+e.同一个拦截器函数，可以设置拦截多个操作。
+eg:	var handler = {
+	  get: function(target, name) {
+	    if (name === 'prototype') {
+	      return Object.prototype;
+	    }
+	    return 'Hello, ' + name;
+	  },
+
+	  apply: function(target, thisBinding, args) {
+	    return args[0];
+	  },
+
+	  construct: function(target, args) {
+	    return {value: args[1]};
+	  }
+	};
+
+	var fproxy = new Proxy(function(x, y) {
+	  return x + y;
+	}, handler);
+
+	fproxy(1, 2) // 1
+	new fproxy(1, 2) // {value: 2}
+	fproxy.prototype === Object.prototype // true
+	fproxy.foo === "Hello, foo" // true
+f.Proxy 支持的拦截操作，一共 13 种。
+-get(target, propKey, receiver)：拦截对象属性的读取，比如proxy.foo和proxy['foo']。
+-set(target, propKey, value, receiver)：拦截对象属性的设置，比如proxy.foo = v或proxy['foo'] = v，返回一个布尔值。
+-has(target, propKey)：拦截propKey in proxy的操作，返回一个布尔值。
+-deleteProperty(target, propKey)：拦截delete proxy[propKey]的操作，返回一个布尔值。
+-ownKeys(target)：拦截Object.getOwnPropertyNames(proxy)、Object.getOwnPropertySymbols(proxy)、Object.keys(proxy)、for...in循环，返回一个数组。该方法返回目标对象所有自身的属性的属性名，而Object.keys()的返回结果仅包括目标对象自身的可遍历属性。
+-getOwnPropertyDescriptor(target, propKey)：拦截Object.getOwnPropertyDescriptor(proxy, propKey)，返回属性的描述对象。
+-defineProperty(target, propKey, propDesc)：拦截Object.defineProperty(proxy, propKey, propDesc）、Object.defineProperties(proxy, propDescs)，返回一个布尔值。
+-preventExtensions(target)：拦截Object.preventExtensions(proxy)，返回一个布尔值。
+-getPrototypeOf(target)：拦截Object.getPrototypeOf(proxy)，返回一个对象。
+-isExtensible(target)：拦截Object.isExtensible(proxy)，返回一个布尔值。
+-setPrototypeOf(target, proto)：拦截Object.setPrototypeOf(proxy, proto)，返回一个布尔值。如果目标对象是函数，那么还有两种额外操作可以拦截。
+-apply(target, object, args)：拦截 Proxy 实例作为函数调用的操作，比如proxy(...args)、proxy.call(object, ...args)、proxy.apply(...)。
+-construct(target, args)：拦截 Proxy 实例作为构造函数调用的操作，比如new proxy(...args)。
+
+(2)Proxy实例的方法
+1.get()
+a.get方法用于拦截某个属性的读取操作，可以接受三个参数，依次为目标对象、属性名和 proxy 实例本身（严格地说，是操作行为所针对的对象），其中最后一个参数可选。
+eg:	var person = {
+	  name: "张三"
+	};
+
+	var proxy = new Proxy(person, {
+	  get: function(target, property) {
+	    if (property in target) {
+	      return target[property];
+	    } else {
+	      throw new ReferenceError("Property \"" + property + "\" does not exist.");
+	    }
+	  }
+	});
+
+	proxy.name // "张三"
+	proxy.age // 抛出一个错误
+b.get()方法可以继承
+eg:	let proto = new Proxy({}, {
+	  get(target, propertyKey, receiver) {
+	    console.log('GET ' + propertyKey);
+	    return target[propertyKey];
+	  }
+	});
+
+	let obj = Object.create(proto);
+	obj.foo // "GET foo"
+c.get方法的第三个参数的例子，它总是指向原始的读操作所在的那个对象，一般情况下就是 Proxy 实例。
+eg:	const proxy = new Proxy({}, {
+	  get: function(target, property, receiver) {
+	    return receiver;
+	  }
+	});
+	proxy.getReceiver === proxy // true
+d.如果一个属性不可配置（configurable）且不可写（writable），则 Proxy 不能修改该属性，否则通过 Proxy 对象访问该属性会报错。
+eg:	const target = Object.defineProperties({}, {
+	  foo: {
+	    value: 123,
+	    writable: false,
+	    configurable: false
+	  },
+	});
+
+	const handler = {
+	  get(target, propKey) {
+	    return 'abc';
+	  }
+	};
+
+	const proxy = new Proxy(target, handler);
+
+	proxy.foo
+
+2.set()
+a.set方法用来拦截某个属性的赋值操作，可以接受四个参数，依次为目标对象、属性名、属性值和 Proxy 实例本身，其中最后一个参数可选。
+eg:	let validator = {
+	  set: function(obj, prop, value) {
+	    if (prop === 'age') {
+	      if (!Number.isInteger(value)) {
+	        throw new TypeError('The age is not an integer');
+	      }
+	      if (value > 200) {
+	        throw new RangeError('The age seems invalid');
+	      }
+	    }
+
+	    // 对于满足条件的 age 属性以及其他属性，直接保存
+	    obj[prop] = value;
+	  }
+	};
+
+	let person = new Proxy({}, validator);
+
+	person.age = 100;
+
+	person.age // 100
+	person.age = 'young' // 报错
+	person.age = 300 // 报错
+b.set方法第四个参数的例子。set方法的第四个参数receiver，指的是原始的操作行为所在的那个对象，一般情况下是proxy实例本身
+eg:	const handler = {
+	  set: function(obj, prop, value, receiver) {
+	    obj[prop] = receiver;
+	  }
+	};
+	const proxy = new Proxy({}, handler);
+	proxy.foo = 'bar';
+	proxy.foo === proxy // true
+c.注意，如果目标对象自身的某个属性，不可写且不可配置，那么set方法将不起作用。
+eg:	const obj = {};
+	Object.defineProperty(obj, 'foo', {
+	  value: 'bar',
+	  writable: false,
+	});
+
+	const handler = {
+	  set: function(obj, prop, value, receiver) {
+	    obj[prop] = 'baz';
+	  }
+	};
+
+	const proxy = new Proxy(obj, handler);
+	proxy.foo = 'baz';
+	proxy.foo // "bar"
+
+3.apply()
+a.apply方法拦截函数的调用、call和apply操作。
+
+apply方法可以接受三个参数，分别是目标对象、目标对象的上下文对象（this）和目标对象的参数数组。
+eg:	var handler = {
+	  apply (target, ctx, args) {
+	    return Reflect.apply(...arguments);
+	  }
+	};
+b.直接调用Reflect.apply方法，也会被拦截。
+eg:	Reflect.apply(proxy, null, [9, 10]) // 38
+
+4.has()
+has方法用来拦截HasProperty操作，即判断对象是否具有某个属性时，这个方法会生效。典型的操作就是in运算符。
+
+has方法可以接受两个参数，分别是目标对象、需查询的属性名。
+eg:	var handler = {
+	  has (target, key) {
+	    if (key[0] === '_') {
+	      return false;
+	    }
+	    return key in target;
+	  }
+	};
+	var target = { _prop: 'foo', prop: 'foo' };
+	var proxy = new Proxy(target, handler);
+	'_prop' in proxy // false
