@@ -128,5 +128,82 @@
 	console.log(target);
 	var proxy = new Proxy(target, handler);
 	console.log(proxy);
+
+	/*has对for...in循环不生效*/
+	let stu1 = {name: '张三',score: 59};
+	let stu2 = {name: '李四',score: 99};
+
+	let handler1 = {
+		has(target, prop) {
+			if(prop === 'score' && target[prop] < 60) {
+				console.log(`${target.name}不及格`);
+				return false;
+			}
+			return prop in target;
+		}
+	}
+
+	let oproxy1 = new Proxy(stu1,handler1);
+	let oproxy2 = new Proxy(stu2,handler1);
+
+	console.log('score' in oproxy1);
+
+	console.log('score' in oproxy2);
+
+	for (let a in oproxy1) {
+		console.log(oproxy1[a]);
+	}
+
+	for(let b in oproxy2) {
+		console.log(oproxy2[b]);
+	}
+
+	/*construct()*/
+	var p = new Proxy(function() {}, {
+		construct: function(target, args) {
+			console.log('called: ' + args.join(', '));
+			return { value: args[0] * 10 }
+		}
+	});
+
+	console.log((new p(1)).value);
+
+	/*ownKeys*/
+	let target1 = {
+		a: 1,
+		b: 2,
+		c: 3,
+		[Symbol.for('secret')]: '4',
+	};
+
+	Object.defineProperty(target1, 'key', {
+		enumerable: false,
+		configurable: true,
+		writable: true,
+		value: 'static'
+	});
+
+	let handler2 = {
+		ownKeys(target) {
+			return ['a', 'd', Symbol.for('secret'), 'key'];
+		}
+	};
+
+	let proxy1 = new Proxy(target1, handler2);
+
+	console.log(Object.keys(proxy1));
+
+	/*Proxy.revocable()*/
+	let target2 = {};
+	let handler3 = {};
+
+	let {proxy2,revoke} = Proxy.revocable(target2, handler3);
+
+	proxy2.foo = 123;
+	console.log(proxy2.foo);
+
+	revoke();
+	console.log(proxy2.foo);
+
 </script>
 </html>
