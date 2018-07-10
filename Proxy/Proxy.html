@@ -199,10 +199,11 @@
 
 	let {proxy2,revoke} = Proxy.revocable(target2, handler3);
 
-	proxy2.foo = 123;
-	console.log(proxy2.foo);
+	// proxy2.foo = 123;
+	// console.log(proxy2.foo);
 
-	revoke();
-	console.log(proxy2.foo);
+	// revoke();
+	// console.log(proxy2.foo);
+	// console.log(proxy1);
 </script>
 </html>
