@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Reflect</title>
+</head>
+<body>
+</body>
+<script>
+	// var loggedObj = new Proxy(obj, {
+	// 	get(target, name) {
+	// 		console.log('get', target, name);
+	// 		return Reflect.get(target, name);
+	// 	},
+	// 	deleteProperty(target, name) {
+	// 		console.log('delete' + name);
+	// 		return Reflect.deleteProperty(target, name);
+	// 	},
+	// 	has(target, name) {
+	// 		console.log('has' + name);
+	// 		return Reflect.has(target, name);
+	// 	}
+	// });
+
+	/*Reflect.get()*/
+	var myObject = {
+		foo: 1,
+		bar: 2,
+		get baz() {
+			return this.foo + this.bar;
+		},
+	};
+
+	var myReceiverObject = {
+		foo: 4,
+		bar: 4,
+	};
+
+	console.log(Reflect.get(myObject, 'baz', 'myReceiverObject'));
+
+	/*set()*/
+	var myObject1 = {
+		foo: 1,
+		set bar(value) {
+			return this.foo = value;
+		},
+	}
+
+	console.log(myObject1.foo);
+
+	Reflect.set(myObject1, 'foo', 2);
+	console.log(myObject1.foo);
+
+	Reflect.set(myObject1, 'bar', 3);
+	console.log(myObject1.foo);
+
+	/*Reflect.defineProperty*/
+	const p = new Proxy({}, {
+		defineProperty(target, prop, descriptor) {
+			console.log(descriptor);
+			return Reflect.defineProperty(target, prop, descriptor);
+		}
+	});
+
+	p.foo = 'bar';
+	console.log(p.foo);
+
+	/*实例：使用Proxy实现观察者模式*/
+	const person1 = observable({
+		name: '张三',
+		age: 20
+	});
+
+	function print() {
+		console.log(`${person1.name}, ${person1.age}`);
+	}
+
+	observe(print);
+
+	person1.name = '李四';
+</script>
+
+</html>
